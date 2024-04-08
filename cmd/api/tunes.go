@@ -80,3 +80,62 @@ func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) updateTuneHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIDParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	tune, err := app.models.Tunes.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Title         string             `json:"title"`
+		Styles        []string           `json:"styles"`
+		Keys          []data.Key         `json:"keys"`
+		TimeSignature data.TimeSignature `json:"time_signature"`
+		Structure     string             `json:"structure"`
+		HasLyrics     bool               `json:"has_lyrics"`
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	tune.Title = input.Title
+	tune.Styles = input.Styles
+	tune.Keys = input.Keys
+	tune.TimeSignature = input.TimeSignature
+	tune.Structure = input.Structure
+	tune.HasLyrics = input.HasLyrics
+
+	v := validator.New()
+
+	if data.ValidateTune(v, tune); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Tunes.Update(tune)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"tune": tune}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

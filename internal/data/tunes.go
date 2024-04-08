@@ -78,7 +78,23 @@ func (t TuneModel) Get(id int64) (*Tune, error) {
 }
 
 func (t TuneModel) Update(tune *Tune) error {
-	return nil
+	query := `
+		UPDATE tunes
+		SET title = $1, styles = $2, keys = $3, time_signature = $4, structure = $5, has_lyrics = $6, version = version + 1
+		WHERE id = $7
+		RETURNING version`
+
+	args := []any{
+		tune.Title,
+		pq.Array(tune.Styles),
+		pq.Array(tune.Keys),
+		tune.TimeSignature,
+		tune.Structure,
+		tune.HasLyrics,
+		tune.ID,
+	}
+
+	return t.DB.QueryRow(query, args...).Scan(&tune.Version)
 }
 
 func (t TuneModel) Delete(id int64) error {

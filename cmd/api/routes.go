@@ -15,6 +15,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 	router.HandlerFunc(http.MethodPost, "/v1/tunes", app.createTuneHandler)
 	router.HandlerFunc(http.MethodGet, "/v1/tunes/:id", app.showTuneHandler)
+	router.HandlerFunc(http.MethodPut, "/v1/tunes/:id", app.updateTuneHandler)
 
 	return app.recoverPanic(router)
 }
