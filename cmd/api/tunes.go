@@ -10,11 +10,11 @@ import (
 
 func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Title         string   `json:"title"`
-		Styles        []string `json:"styles"`
-		Keys          []string `json:"keys"`
-		TimeSignature string   `json:"time_signature"`
-		Structure     string   `json:"structure"`
+		Title         string             `json:"title"`
+		Styles        []string           `json:"styles"`
+		Keys          []data.Key         `json:"keys"`
+		TimeSignature data.TimeSignature `json:"time_signature"`
+		Structure     string             `json:"structure"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -38,8 +38,8 @@ func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) 
 		CreatedAt:     time.Now(),
 		Title:         "Roanoke",
 		Styles:        []string{"Bluegrass"},
-		Keys:          []string{"G major"},
-		TimeSignature: "2/2",
+		Keys:          []data.Key{data.Key("G major")},
+		TimeSignature: data.TimeSignature("2/2"),
 		Structure:     "AABB",
 		Version:       1,
 	}
