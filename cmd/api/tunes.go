@@ -9,7 +9,21 @@ import (
 )
 
 func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "create a new tune")
+	var input struct {
+		Title         string   `json:"title"`
+		Styles        []string `json:"styles"`
+		Keys          []string `json:"keys"`
+		TimeSignature string   `json:"time_signature"`
+		Structure     string   `json:"structure"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	fmt.Fprintf(w, "%+v\n", input)
 }
 
 func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +38,7 @@ func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) 
 		CreatedAt:     time.Now(),
 		Title:         "Roanoke",
 		Styles:        []string{"Bluegrass"},
-		Key:           "G major",
+		Keys:          []string{"G major"},
 		TimeSignature: "2/2",
 		Structure:     "AABB",
 		Version:       1,
