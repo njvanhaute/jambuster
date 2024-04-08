@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -33,7 +34,10 @@ func (t TuneModel) Insert(tune *Tune) error {
 
 	args := []any{tune.Title, pq.Array(tune.Styles), pq.Array(tune.Keys), tune.TimeSignature, tune.Structure, tune.HasLyrics}
 
-	return t.DB.QueryRow(query, args...).Scan(&tune.ID, &tune.CreatedAt, &tune.Version)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return t.DB.QueryRowContext(ctx, query, args...).Scan(&tune.ID, &tune.CreatedAt, &tune.Version)
 }
 
 func (t TuneModel) Get(id int64) (*Tune, error) {
@@ -49,7 +53,10 @@ func (t TuneModel) Get(id int64) (*Tune, error) {
 	var tune Tune
 	var keyStrings []string
 
-	err := t.DB.QueryRow(query, id).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := t.DB.QueryRowContext(ctx, query, id).Scan(
 		&tune.ID,
 		&tune.CreatedAt,
 		&tune.Title,
@@ -95,7 +102,10 @@ func (t TuneModel) Update(tune *Tune) error {
 		tune.Version,
 	}
 
-	err := t.DB.QueryRow(query, args...).Scan(&tune.Version)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := t.DB.QueryRowContext(ctx, query, args...).Scan(&tune.Version)
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
@@ -117,7 +127,10 @@ func (t TuneModel) Delete(id int64) error {
 		DELETE FROM tunes
 		WHERE id = $1`
 
-	result, err := t.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := t.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
