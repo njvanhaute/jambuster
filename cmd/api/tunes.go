@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"jambuster.njvanhaute.com/internal/data"
+	"jambuster.njvanhaute.com/internal/validator"
 )
 
 func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request) {
@@ -20,6 +21,21 @@ func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	tune := &data.Tune{
+		Title:         input.Title,
+		Styles:        input.Styles,
+		Keys:          input.Keys,
+		TimeSignature: input.TimeSignature,
+		Structure:     input.Structure,
+	}
+
+	v := validator.New()
+
+	if data.ValidateTune(v, tune); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
