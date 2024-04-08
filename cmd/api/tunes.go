@@ -147,7 +147,12 @@ func (app *application) updateTuneHandler(w http.ResponseWriter, r *http.Request
 
 	err = app.models.Tunes.Update(tune)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrEditConflict):
+			app.editConflictResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 

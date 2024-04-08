@@ -81,7 +81,7 @@ func (t TuneModel) Update(tune *Tune) error {
 	query := `
 		UPDATE tunes
 		SET title = $1, styles = $2, keys = $3, time_signature = $4, structure = $5, has_lyrics = $6, version = version + 1
-		WHERE id = $7
+		WHERE id = $7 AND version = $8
 		RETURNING version`
 
 	args := []any{
@@ -92,9 +92,20 @@ func (t TuneModel) Update(tune *Tune) error {
 		tune.Structure,
 		tune.HasLyrics,
 		tune.ID,
+		tune.Version,
 	}
 
-	return t.DB.QueryRow(query, args...).Scan(&tune.Version)
+	err := t.DB.QueryRow(query, args...).Scan(&tune.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (t TuneModel) Delete(id int64) error {
