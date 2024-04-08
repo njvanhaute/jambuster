@@ -16,6 +16,7 @@ func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request
 		Keys          []data.Key         `json:"keys"`
 		TimeSignature data.TimeSignature `json:"time_signature"`
 		Structure     string             `json:"structure"`
+		HasLyrics     bool               `json:"has_lyrics"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -30,6 +31,7 @@ func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request
 		Keys:          input.Keys,
 		TimeSignature: input.TimeSignature,
 		Structure:     input.Structure,
+		HasLyrics:     input.HasLyrics,
 	}
 
 	v := validator.New()
@@ -39,7 +41,19 @@ func (app *application) createTuneHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	fmt.Fprintf(w, "%+v\n", input)
+	err = app.models.Tunes.Insert(tune)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	headers := make(http.Header)
+	headers.Set("Location", fmt.Sprintf("/v1/tunes/%d", tune.ID))
+
+	err = app.writeJSON(w, http.StatusCreated, envelope{"tune": tune}, headers)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) {

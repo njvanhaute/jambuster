@@ -6,5 +6,6 @@ CREATE TABLE IF NOT EXISTS tunes (
     keys text[] NOT NULL,
     time_signature text NOT NULL,
     structure text NOT NULL,
+    has_lyrics boolean NOT NULL,
     version integer NOT NULL DEFAULT 1
 );
