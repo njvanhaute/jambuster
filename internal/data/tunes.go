@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/lib/pq"
@@ -36,7 +37,44 @@ func (t TuneModel) Insert(tune *Tune) error {
 }
 
 func (t TuneModel) Get(id int64) (*Tune, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
+		FROM tunes
+		WHERE id = $1`
+
+	var tune Tune
+	var keyStrings []string
+
+	err := t.DB.QueryRow(query, id).Scan(
+		&tune.ID,
+		&tune.CreatedAt,
+		&tune.Title,
+		pq.Array(&tune.Styles),
+		pq.Array(&keyStrings),
+		&tune.TimeSignature,
+		&tune.Structure,
+		&tune.HasLyrics,
+		&tune.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	for _, keyString := range keyStrings {
+		tune.Keys = append(tune.Keys, Key(keyString))
+	}
+
+	return &tune, nil
 }
 
 func (t TuneModel) Update(tune *Tune) error {
@@ -67,5 +105,4 @@ func ValidateTune(v *validator.Validator, tune *Tune) {
 
 	v.Check(tune.Structure != "", "structure", "must be provided")
 	v.Check(len(tune.Structure) >= 1, "structure", "must be at least 1 character long")
-
 }

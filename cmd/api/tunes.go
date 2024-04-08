@@ -1,9 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
-	"time"
 
 	"jambuster.njvanhaute.com/internal/data"
 	"jambuster.njvanhaute.com/internal/validator"
@@ -63,15 +63,16 @@ func (app *application) showTuneHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	tune := data.Tune{
-		ID:            id,
-		CreatedAt:     time.Now(),
-		Title:         "Roanoke",
-		Styles:        []string{"Bluegrass"},
-		Keys:          []data.Key{data.Key("G major")},
-		TimeSignature: data.TimeSignature("2/2"),
-		Structure:     "AABB",
-		Version:       1,
+	tune, err := app.models.Tunes.Get(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelope{"tune": tune}, nil)
