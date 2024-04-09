@@ -220,13 +220,13 @@ func (app *application) listTunesHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	tunes, err := app.models.Tunes.GetAll(input.Title, input.Styles, input.Keys, input.TimeSignature, input.Structure, input.HasLyrics, input.Filters)
+	tunes, metadata, err := app.models.Tunes.GetAll(input.Title, input.Styles, input.Keys, input.TimeSignature, input.Structure, input.HasLyrics, input.Filters)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"tunes": tunes}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"tunes": tunes, "metadata": metadata}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

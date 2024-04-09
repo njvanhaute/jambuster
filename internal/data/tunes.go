@@ -85,9 +85,9 @@ func (t TuneModel) Get(id int64) (*Tune, error) {
 	return &tune, nil
 }
 
-func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSignature string, structure string, hasLyrics *bool, filters Filters) ([]*Tune, error) {
+func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSignature string, structure string, hasLyrics *bool, filters Filters) ([]*Tune, Metadata, error) {
 	query := fmt.Sprintf(`
-		SELECT id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
+		SELECT count(*) OVER(), id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
 		FROM tunes
 		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (styles @> $2 OR $2 = '{}')
@@ -106,11 +106,12 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 
 	rows, err := t.DB.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
 	defer rows.Close()
 
+	totalRecords := 0
 	tunes := []*Tune{}
 
 	for rows.Next() {
@@ -118,6 +119,7 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 		var keyStrings []string
 
 		err := rows.Scan(
+			&totalRecords,
 			&tune.ID,
 			&tune.CreatedAt,
 			&tune.Title,
@@ -130,7 +132,7 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 		)
 
 		if err != nil {
-			return nil, err
+			return nil, Metadata{}, err
 		}
 
 		for _, keyString := range keyStrings {
@@ -141,10 +143,12 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, err
+		return nil, Metadata{}, err
 	}
 
-	return tunes, nil
+	metadata := calculateMetadata(totalRecords, filters.Page, filters.PageSize)
+
+	return tunes, metadata, nil
 }
 
 func (t TuneModel) Update(tune *Tune) error {
