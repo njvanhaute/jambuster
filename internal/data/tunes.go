@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/lib/pq"
@@ -85,7 +86,7 @@ func (t TuneModel) Get(id int64) (*Tune, error) {
 }
 
 func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSignature string, structure string, hasLyrics *bool, filters Filters) ([]*Tune, error) {
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
 		FROM tunes
 		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
@@ -94,7 +95,7 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 		AND (time_signature = $4 OR $4 = '')
 		AND (structure = $5 OR $5 = '')
 		AND (has_lyrics = $6 OR $6 IS NULL)
-		ORDER BY id`
+		ORDER BY %s %s, id ASC`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
