@@ -88,7 +88,7 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 	query := `
 		SELECT id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
 		FROM tunes
-		WHERE (LOWER(title) = LOWER($1) OR $1 = '')
+		WHERE (to_tsvector('simple', title) @@ plainto_tsquery('simple', $1) OR $1 = '')
 		AND (styles @> $2 OR $2 = '{}')
 		AND (keys @> $3 OR $3 = '{}')
 		AND (time_signature = $4 OR $4 = '')
