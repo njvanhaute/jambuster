@@ -11,13 +11,15 @@ var (
 )
 
 type Models struct {
-	Tunes TuneModel
-	Users UserModel
+	Tokens TokenModel
+	Tunes  TuneModel
+	Users  UserModel
 }
 
 func NewModels(db *sql.DB) Models {
 	return Models{
-		Tunes: TuneModel{DB: db},
-		Users: UserModel{DB: db},
+		Tokens: TokenModel{DB: db},
+		Tunes:  TuneModel{DB: db},
+		Users:  UserModel{DB: db},
 	}
 }
