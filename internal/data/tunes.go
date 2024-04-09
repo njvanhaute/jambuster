@@ -84,6 +84,66 @@ func (t TuneModel) Get(id int64) (*Tune, error) {
 	return &tune, nil
 }
 
+func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSignature string, structure string, hasLyrics *bool, filters Filters) ([]*Tune, error) {
+	query := `
+		SELECT id, created_at, title, styles, keys, time_signature, structure, has_lyrics, version
+		FROM tunes
+		WHERE (LOWER(title) = LOWER($1) OR $1 = '')
+		AND (styles @> $2 OR $2 = '{}')
+		AND (keys @> $3 OR $3 = '{}')
+		AND (time_signature = $4 OR $4 = '')
+		AND (structure = $5 OR $5 = '')
+		AND (has_lyrics = $6 OR $6 IS NULL)
+		ORDER BY id`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	println("")
+	println(hasLyrics)
+	rows, err := t.DB.QueryContext(ctx, query, title, pq.Array(styles), pq.Array(keys), timeSignature, structure, hasLyrics)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	tunes := []*Tune{}
+
+	for rows.Next() {
+		var tune Tune
+		var keyStrings []string
+
+		err := rows.Scan(
+			&tune.ID,
+			&tune.CreatedAt,
+			&tune.Title,
+			pq.Array(&tune.Styles),
+			pq.Array(&keyStrings),
+			&tune.TimeSignature,
+			&tune.Structure,
+			&tune.HasLyrics,
+			&tune.Version,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		for _, keyString := range keyStrings {
+			tune.Keys = append(tune.Keys, Key(keyString))
+		}
+
+		tunes = append(tunes, &tune)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tunes, nil
+}
+
 func (t TuneModel) Update(tune *Tune) error {
 	query := `
 		UPDATE tunes

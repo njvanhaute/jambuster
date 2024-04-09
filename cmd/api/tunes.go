@@ -185,3 +185,49 @@ func (app *application) deleteTuneHandler(w http.ResponseWriter, r *http.Request
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) listTunesHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title         string
+		Styles        []string
+		Keys          []string
+		TimeSignature string
+		Structure     string
+		HasLyrics     *bool
+		data.Filters
+	}
+
+	v := validator.New()
+
+	qs := r.URL.Query()
+
+	input.Title = app.readString(qs, "title", "")
+	input.Styles = app.readCSV(qs, "styles", []string{})
+	input.Keys = app.readCSV(qs, "keys", []string{})
+	input.TimeSignature = app.readString(qs, "time_signature", "")
+	input.Structure = app.readString(qs, "structure", "")
+	input.HasLyrics = app.readBool(qs, "has_lyrics", nil, v)
+
+	input.Filters.Page = app.readInt(qs, "page", 1, v)
+	input.Filters.PageSize = app.readInt(qs, "page_size", 20, v)
+
+	input.Filters.Sort = app.readString(qs, "sort", "id")
+	input.Filters.SortSafelist = []string{"id", "title", "time_signature", "structure", "has_lyrics",
+		"-id", "-title", "-time_signature", "-structure", "-has_lyrics"}
+
+	if data.ValidateFilters(v, input.Filters); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	tunes, err := app.models.Tunes.GetAll(input.Title, input.Styles, input.Keys, input.TimeSignature, input.Structure, input.HasLyrics, input.Filters)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"tunes": tunes}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
