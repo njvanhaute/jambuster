@@ -14,12 +14,12 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
 
-	router.HandlerFunc(http.MethodGet, "/v1/tunes", app.requireActivatedUser(app.listTunesHandler))
-	router.HandlerFunc(http.MethodPost, "/v1/tunes", app.requireActivatedUser(app.createTuneHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/tunes", app.requirePermission("tunes:read", app.listTunesHandler))
+	router.HandlerFunc(http.MethodPost, "/v1/tunes", app.requirePermission("tunes:write", app.createTuneHandler))
 
-	router.HandlerFunc(http.MethodGet, "/v1/tunes/:id", app.requireActivatedUser(app.showTuneHandler))
-	router.HandlerFunc(http.MethodPatch, "/v1/tunes/:id", app.requireActivatedUser(app.updateTuneHandler))
-	router.HandlerFunc(http.MethodDelete, "/v1/tunes/:id", app.requireActivatedUser(app.deleteTuneHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/tunes/:id", app.requirePermission("tunes:read", app.showTuneHandler))
+	router.HandlerFunc(http.MethodPatch, "/v1/tunes/:id", app.requirePermission("tunes:write", app.updateTuneHandler))
+	router.HandlerFunc(http.MethodDelete, "/v1/tunes/:id", app.requirePermission("tunes:write", app.deleteTuneHandler))
 
 	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
 
