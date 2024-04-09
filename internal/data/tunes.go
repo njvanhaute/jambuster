@@ -95,14 +95,16 @@ func (t TuneModel) GetAll(title string, styles []string, keys []string, timeSign
 		AND (time_signature = $4 OR $4 = '')
 		AND (structure = $5 OR $5 = '')
 		AND (has_lyrics = $6 OR $6 IS NULL)
-		ORDER BY %s %s, id ASC`, filters.sortColumn(), filters.sortDirection())
+		ORDER BY %s %s, id ASC
+		LIMIT $7 OFFSET $8`, filters.sortColumn(), filters.sortDirection())
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	println("")
-	println(hasLyrics)
-	rows, err := t.DB.QueryContext(ctx, query, title, pq.Array(styles), pq.Array(keys), timeSignature, structure, hasLyrics)
+	args := []any{title, pq.Array(styles), pq.Array(keys), timeSignature, structure, hasLyrics,
+		filters.limit(), filters.offset()}
+
+	rows, err := t.DB.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
