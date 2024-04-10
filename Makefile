@@ -92,9 +92,12 @@ production/deploy/api:
 	rsync -P ./bin/linux_amd64/api jambuster@${JAMBUSTER_PROD_IP}:~
 	rsync -rP --delete ./migrations jambuster@${JAMBUSTER_PROD_IP}:~
 	rsync -P ./remote/production/api.service jambuster@${JAMBUSTER_PROD_IP}:~
+	rsync -P ./remote/production/Caddyfile jambuster@${JAMBUSTER_PROD_IP}:~
 	ssh -t jambuster@${JAMBUSTER_PROD_IP} '\
 	migrate -path ~/migrations -database $$JAMBUSTER_DB_DSN up \
 	&& sudo mv ~/api.service /etc/systemd/system/ \
 	&& sudo systemctl enable api \
 	&& sudo systemctl restart api \
+	&& sudo mv ~/Caddyfile /etc/caddy/ \
+	&& sudo systemctl reload caddy \
 	'
