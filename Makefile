@@ -81,16 +81,20 @@ build/api:
 # PRODUCTION
 # ==================================================================================== #
 
-production_host_ip = '209.38.144.111'
-
 ## production/connect: connect to the production server
 .PHONY: production/connect
 production/connect:
-	ssh jambuster@${production_host_ip}
+	ssh jambuster@${JAMBUSTER_PROD_IP}
 
 ## production/deploy/api: deploy the api to production
 .PHONY: production/deploy/api
 production/deploy/api:
-	rsync -P ./bin/linux_amd64/api jambuster@${production_host_ip}:~
-	rsync -rP --delete ./migrations jambuster@${production_host_ip}:~
-	ssh -t jambuster@${production_host_ip} 'migrate -path ~/migrations -database $$JAMBUSTER_DB_DSN up'
+	rsync -P ./bin/linux_amd64/api jambuster@${JAMBUSTER_PROD_IP}:~
+	rsync -rP --delete ./migrations jambuster@${JAMBUSTER_PROD_IP}:~
+	rsync -P ./remote/production/api.service jambuster@${JAMBUSTER_PROD_IP}:~
+	ssh -t jambuster@${JAMBUSTER_PROD_IP} '\
+	migrate -path ~/migrations -database $$JAMBUSTER_DB_DSN up \
+	&& sudo mv ~/api.service /etc/systemd/system/ \
+	&& sudo systemctl enable api \
+	&& sudo systemctl restart api \
+	'
