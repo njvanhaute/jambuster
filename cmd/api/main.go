@@ -16,9 +16,12 @@ import (
 	_ "github.com/lib/pq"
 	"jambuster.njvanhaute.com/internal/data"
 	"jambuster.njvanhaute.com/internal/mailer"
+	"jambuster.njvanhaute.com/internal/vcs"
 )
 
-const version = "1.0.0"
+var (
+	version = vcs.Version()
+)
 
 type config struct {
 	port int
