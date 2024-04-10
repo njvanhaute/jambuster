@@ -52,7 +52,7 @@ apt --yes install fail2ban
 
 # Install the migrate CLI tool.
 curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
-mv migrate.linux-amd64 /usr/local/bin/migrate
+mv migrate /usr/local/bin/migrate
 
 # Install PostgreSQL.
 apt --yes install postgresql
