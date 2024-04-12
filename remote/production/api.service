@@ -23,7 +23,7 @@ WorkingDirectory=/home/jambuster
 ExecStart=/home/jambuster/api -port=4000 -db-dsn=${JAMBUSTER_DB_DSN} \
     -smtp-host=${JAMBUSTER_SMTP_HOST} -smtp-sender=${JAMBUSTER_SMTP_SENDER} \
     -smtp-username=${JAMBUSTER_SMTP_USERNAME} -smtp-password=${JAMBUSTER_SMTP_PASSWORD} \
-    -env=production
+    -smtp-port=${JAMBUSTER_SMTP_PORT} -env=production
 
 # Automatically restart the service after a 5-second wait if it exits with a non-zero
 # exit code. If it restarts more than 5 times in 600 seconds, then the rate limit we
