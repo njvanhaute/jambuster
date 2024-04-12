@@ -1,11 +1,11 @@
-{{define "subject"}}Welcome to Jambuster!{{end}}
+{{define "subject"}}Welcome to njvanhaute.com / Jambuster!{{end}}
 
 {{define "plainBody"}}
 Hi,
 
-Thanks for signing up for a Jambuster account. We're excited to have you on board!
+Thanks for signing up for a njvanhaute.com / Jambuster API account. I'm excited to have you on board!
 
-For future reference, your user ID number is {{.userID}}.
+You can use the same account for both the website and the backend API.
 
 Please send a request to the `PUT /v1/users/activated` endpoint with the following JSON
 body to activate your account:
@@ -16,7 +16,7 @@ Please note that this is a one-time use token and it will expire in 3 days.
 
 Thanks,
 
-The Jambuster Team
+Nicholas
 {{end}}
 
 {{define "htmlBody"}}
@@ -30,8 +30,8 @@ The Jambuster Team
 
 <body>
     <p>Hi,</p>
-    <p>Thanks for signing up for a Jambuster account. We're excited to have you on board!</p>
-    <p>For future reference, your user ID number is {{.userID}}.</p>
+    <p>Thanks for signing up for a njvanhaute.com / Jambuster API account. I'm excited to have you on board!</p>
+    <p>You can use the same account for both the website and the backend API.</p>
     <p>Please send a request to the <code>PUT /v1/users/activated</code> endpoint with the
         following JSON body to activate your account:</p>
         <pre><code>
@@ -39,7 +39,7 @@ The Jambuster Team
         </code></pre>
     <p>Please note that this is a one-time use token and it will expire in 3 days.</p>
     <p>Thanks,</p>
-    <p>The Jambuster Team</p>
+    <p>Nicholas</p>
 </body>
 
 </html>
