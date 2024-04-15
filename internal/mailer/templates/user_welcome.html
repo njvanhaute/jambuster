@@ -11,7 +11,7 @@ To activate your account, visit https://njvanhaute.com/user/activate and enter t
 
 {{.activationToken}}
 
-Alternatively, send a request to the `PUT /v1/users/activated` endpoint with the following JSON
+Alternatively, send a request to the `PUT /v1/users/activate` endpoint with the following JSON
 body:
 
 {"token": "{{.activationToken}}"}
@@ -37,7 +37,7 @@ Nicholas
     <p>You can use the same account for both the website and the backend API.</p>
     <p>To activate your account, visit <a href="https://njvanhaute.com/user/activate">https://njvanhaute.com/user/activate</a> and enter the following code:</p>
     <pre><code>{{.activationToken}}</code></pre>
-    <p>Alternatively, send a request to the <code>PUT /v1/users/activated</code> endpoint with the
+    <p>Alternatively, send a request to the <code>PUT /v1/users/activate</code> endpoint with the
         following JSON body:</p>
         <pre><code>
             {"token": "{{.activationToken}}"}
